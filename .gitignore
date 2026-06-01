@@ -1,3 +1,5 @@
 temp_ref_repo/
 gd-audio-denoise/docs/
 gd-audio-denoise/data/*.wav
+*.ipynb
+main (1).ipynb
