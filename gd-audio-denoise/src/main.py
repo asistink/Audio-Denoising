@@ -1,12 +1,13 @@
 import os
 import argparse
+import numpy as np
 from audio_processor import AudioProcessor
 from gd_optimizer import GradientDescentSmoother
 from visualizer import Visualizer
 
 def main():
     parser = argparse.ArgumentParser(description="Gradient Descent Audio Denoising")
-    parser.add_argument("--input", type=str, default="../data/noisy_sample.wav", help="Path ke file audio input (.wav)")
+    parser.add_argument("--input", type=str, default="../data/audio.wav", help="Path ke file audio input (.wav)")
     parser.add_argument("--output_audio", type=str, default="../data/cleaned_sample.wav", help="Path keluaran file audio bersih")
     parser.add_argument("--epochs", type=int, default=500, help="Jumlah maksimum iterasi Gradient Descent")
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate (alpha)")
@@ -21,13 +22,23 @@ def main():
     print(f"Membaca file: {input_path}")
     
     # 1. Load Audio
-    sample_rate, noisy_signal = AudioProcessor.load_audio(input_path)
+    sample_rate, clean_signal = AudioProcessor.load_audio(input_path)
     
-    if noisy_signal is None:
+    if clean_signal is None:
         print("Gagal membaca audio. Keluar program.")
         return
         
-    print(f"Audio termuat. Sample Rate: {sample_rate} Hz, Durasi: {len(noisy_signal)/sample_rate:.2f} detik.")
+    print(f"Audio termuat. Sample Rate: {sample_rate} Hz, Durasi: {len(clean_signal)/sample_rate:.2f} detik.")
+    
+    # 1.5 Menambahkan noise (dari main(1).ipynb)
+    print("Menerapkan noise pada audio...")
+    noise_strength = 0.02
+    noisy_signal = clean_signal + noise_strength * np.random.randn(len(clean_signal))
+    noisy_signal = np.clip(noisy_signal, -1, 1)
+    
+    noisy_audio_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/noisy_sample.wav"))
+    print(f"Menyimpan audio ber-noise ke: {noisy_audio_path}")
+    AudioProcessor.save_audio(noisy_audio_path, sample_rate, noisy_signal)
     
     # 2. Proses Denoising (Murni Matematika from scratch)
     smoother = GradientDescentSmoother(
